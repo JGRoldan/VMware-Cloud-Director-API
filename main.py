@@ -15,23 +15,18 @@ def get_credentials():
     
     return username, password
 
-def get_token_authentication(auth, username, password):
+def get_token_and_version(auth, username, password):
     api_version = auth.get_api_version(username, password)
     token = auth.get_token_authentication(username, password, api_version)
     
     return token, api_version
 
-def get_vApps(username, password, token, api_version):
+def fetch_vms(username, password, token, api_version):
     http = HTTPMethods()
-    vApps = http.get_vApps(username, password, token, api_version)
-    return vApps
+    vApps_list = http.get_vApps(username, password, token, api_version)
+    return http.get_vm(username, password, token, api_version, vApps_list)
 
-def get_vm(username, password, token, api_version, vApps_list):
-    http = HTTPMethods()
-    vm = http.get_vm(username, password, token, api_version, vApps_list)
-    return vm
-
-def selected_vm(vm_list):
+def select_vms(vm_list):
     user_input = input(f'{Fore.BLUE}[Input]{Style.RESET_ALL} Selecciona las VMs a realizar snapshots separadas por ",": ')
 
     # Verificar si el usuario ingresó algo
@@ -67,47 +62,48 @@ def print_table(data):
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def main_code():
-    try:
-        auth = Authentication() 
-        username, password = get_credentials()
-        token, api_version = get_token_authentication(auth, username, password)
-        vApps_list = get_vApps(username, password, token, api_version)
-        vm_list = get_vm(username, password, token, api_version, vApps_list)# output = [{'href': 'id_de_vm', 'name':'vm_name'}]
-        while True:
-            print(f"\n{Fore.LIGHTGREEN_EX}[Notice]{Style.RESET_ALL} Seleccione una opción de snapshot...")
-            option = input(f"\n{Fore.BLUE}[Input]{Style.RESET_ALL} \n 1. Snapshot selectivo. \n 2. Snapshot de todas las VM(s).: \n")
+def take_snapshots(selected_vms=None, vm_list=None):
+    if selected_vms:
+        print(f"\n{Fore.LIGHTGREEN_EX}[Update]{Style.RESET_ALL} VM(s) seleccionadas para snapshot:")
+        print_table(selected_vms)
+        time.sleep(2)
+        # Lógica para hacer snapshot
+    elif vm_list:
+        print(f"{Fore.YELLOW}[Progress]{Style.RESET_ALL} Realizando snapshots de todas las VM(s)...")
+        time.sleep(2)
+        # Lógica para hacer snapshot
 
-            while True:
-                if(option == '1'):
-                    print(f"{Fore.BLUE}[Input]{Style.RESET_ALL} VM(s) disponibles: ")
-                    print_table(vm_list)
-                    selected_vms = selected_vm(vm_list)
-                    if selected_vms:
-                        clear_screen()
-                        print(f"\n{Fore.LIGHTGREEN_EX}[Update]{Style.RESET_ALL} VM(s) a realizar snapshot:")
-                        print_table(selected_vms)
-                        #HACER LA SNAPSHOT
-                        #HACER LA SNAPSHOT
-                    else:
-                        clear_screen()  # Limpiar la pantalla si la selección fue incorrecta o vacía
-                    
-                elif(option == '2'):
-                    print(f"{Fore.YELLOW}[Progress]{Style.RESET_ALL} Snapshots en progreso...")
-                    #HACER LA SNAPSHOT
-                    #HACER LA SNAPSHOT
-                    break
-                else:
-                    print(f"{Fore.YELLOW}[Warning]{Style.RESET_ALL} Entrada inválida. Asegúrate de ingresar la opción correcta.")
-                    time.sleep(2)
-                    clear_screen()  # Limpiar la pantalla si la selección fue incorrecta o vacía
-                    break
+def display_menu():
+    print(f"\n{Fore.LIGHTGREEN_EX}[Notice]{Style.RESET_ALL} Seleccione una opción de snapshot...")
+    print(f"\n{Fore.BLUE}[Input]{Style.RESET_ALL} \n 1. Snapshot selectivo. \n 2. Snapshot de todas las VM(s).")
+    return input(f"\n{Fore.BLUE}[Input]{Style.RESET_ALL} Opción: ")
+
+def main():
+    try:
+        auth = Authentication()
+        username, password = get_credentials()
+        token, api_version = get_token_and_version(auth, username, password)
+        vm_list = fetch_vms(username, password, token, api_version)
+        
+        while True:
+            clear_screen()
+            option = display_menu()
+            if option == '1':
+                print_table(vm_list)
+                selected_vms = select_vms(vm_list)
+                take_snapshots(selected_vms=selected_vms)
+                break
+            elif option == '2':
+                take_snapshots(vm_list=vm_list)
+                break
+            else:
+                print(f"{Fore.YELLOW}[Warning]{Style.RESET_ALL} Entrada inválida. Asegúrate de ingresar la opción correcta.")
+                time.sleep(2)
                 
     except Exception as e:
-       print(f"{Fore.RED}[Error]{Style.RESET_ALL} Ocurrió un error: {e}")
-    
+        print(f"{Fore.RED}[Error]{Style.RESET_ALL} Ocurrió un error: {e}")    
     input(f"\n{Fore.BLUE}[Input]{Style.RESET_ALL} Presione enter para salir...")
 
 if __name__ == '__main__':
     init(autoreset=True)
-    main_code()
+    main()
