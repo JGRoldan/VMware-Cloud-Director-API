@@ -62,17 +62,22 @@ def print_table(data):
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def take_snapshots(selected_vms=None, vm_list=None):
+def take_snapshots(username, password, token, api_version, selected_vms=None, vm_list=None):
+    http = HTTPMethods()
     if selected_vms:
         print(f"\n{Fore.LIGHTGREEN_EX}[Update]{Style.RESET_ALL} VM(s) seleccionadas para snapshot:")
         print_table(selected_vms)
-        time.sleep(2)
-        # Lógica para hacer snapshot
+        print(f"{Fore.YELLOW}[Progress]{Style.RESET_ALL} Realizando snapshots de las VM(s) seleccionadas...")
+        vm_href = [entry['href'] for entry in selected_vms]
+        create_snapshot = http.create_snapshot(username, password, token, api_version, vm_href)
+        return
+            
     elif vm_list:
         print(f"{Fore.YELLOW}[Progress]{Style.RESET_ALL} Realizando snapshots de todas las VM(s)...")
-        time.sleep(2)
-        # Lógica para hacer snapshot
-
+        vm_href = [entry['href'] for entry in vm_list]
+        create_snapshot = http.create_snapshot(username, password, token, api_version, vm_href)
+        return
+        
 def display_menu():
     print(f"\n{Fore.LIGHTGREEN_EX}[Notice]{Style.RESET_ALL} Seleccione una opción de snapshot...")
     print(f"\n{Fore.BLUE}[Input]{Style.RESET_ALL} \n 1. Snapshot selectivo. \n 2. Snapshot de todas las VM(s).")
@@ -91,10 +96,10 @@ def main():
             if option == '1':
                 print_table(vm_list)
                 selected_vms = select_vms(vm_list)
-                take_snapshots(selected_vms=selected_vms)
+                take_snapshots(username, password, token, api_version, selected_vms=selected_vms)
                 break
             elif option == '2':
-                take_snapshots(vm_list=vm_list)
+                take_snapshots(username, password, token, api_version, vm_list=vm_list)
                 break
             else:
                 print(f"{Fore.YELLOW}[Warning]{Style.RESET_ALL} Entrada inválida. Asegúrate de ingresar la opción correcta.")
