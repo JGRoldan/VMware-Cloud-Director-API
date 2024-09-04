@@ -41,6 +41,8 @@ Esta clase gestiona la autenticación del usuario mediante una solicitud a una A
 - **Método `get_vApps(username, password, token, api_version)`**: Utiliza el metodo `make_request(...args)`. Si la respuesta es exitosa, se devuelve un array con el identificador de la vApp. Si falla, se lanza una excepción `HTTPError`.
 - **Método `get_vm(username, password, token, api_version, vApps_list)`**: Utiliza el metodo `make_request(args)` y ThreadPoolExecutor para ejecutar el método `process_vm(...args)` en paralelo para cada elemento en vApps_list.
 Si la respuesta es exitosa, se devuelve un diccionario con el identificador de la VM y su nombre. Si falla, se lanza una excepción `HTTPError`.
+- **Método `create_snapshot(self, username, password, token, api_version, vm_list)`**: Utiliza el metodo `make_request(args)` y ThreadPoolExecutor para ejecutar el método `process_snapshot(...args)` en paralelo para cada elemento en vm_list.
+Si la respuesta es exitosa, se crea la snapshot correctamente. Si falla, se lanza una excepción `HTTPError`.
 
 ### Funciones Principales
 
@@ -49,6 +51,7 @@ Si la respuesta es exitosa, se devuelve un diccionario con el identificador de l
 - **`get_token_authentication(username, password)`**: Solicita el token de autenticación utilizando las credenciales proporcionadas y devuelve el token.
 - **`get_vApps(username, password, token, api_version)`**: Solicita las vApps disponibles y retorna su ID.
 - **`get_vm(username, password, token, api_version, vApps_list)`**: Solicita las VM(s) disponibles y retorna su nombre/id en un diccionario. `[{'href': 'vm-XXX-YYY-ZZZ, 'name':'VM_1'}]`
+- **`take_snapshots(username, password, token, api_version, selected_vms=None, vm_list=None)`**: Solicita al metodo `HttpMethos` generar las snapshots correspondientes.
 
 - **`main_code()`**: Función principal que coordina la ejecución del programa.
 
@@ -56,6 +59,7 @@ Si la respuesta es exitosa, se devuelve un diccionario con el identificador de l
 
 ### Requisitos
 - **`Python 3.x`**
+- **`Pip3 24.x`**
 - **`requests library`**
 - **`colorama library`**
 - **`tabulate library`**
