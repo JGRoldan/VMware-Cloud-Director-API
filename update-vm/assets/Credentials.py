@@ -1,13 +1,15 @@
-from colorama import Fore, Style
+import os
+from dotenv import load_dotenv
 
 class Credentials:
     def __init__(self):
+        load_dotenv()
         self.username = None
         self.password = None
 
     def collect_data(self):
-        self.username = input(f"{Fore.BLUE}[Input]{Style.RESET_ALL} Ingrese el usuario local: ")
-        self.password = input(f"{Fore.BLUE}[Input]{Style.RESET_ALL} Ingrese la contraseña: ")
+        self.username = os.getenv('USERNAME_VCLOUD')
+        self.password =  os.getenv('PASSWORD_VCLOUD')
 
 
 
