@@ -13,6 +13,7 @@ Este proyecto contiene un código en Python para modificar la ram y cpu en entor
     - [Requisitos](#requisitos)
     - [Ejemplo Caso de Uso](#ejemplo-caso-de-uso)
     - [Modificar RAM](#modificar-ram)
+  - [Modificar RAM y CPU en una sola petición](#modificar-ram-y-cpu-en-una-sola-petición)
 
 
 ## Estructura del Proyecto
@@ -111,3 +112,62 @@ pip3 install requests colorama
 </ns2:Item>
 ```
 
+## Modificar RAM y CPU en una sola petición
+1. Obtenemos los datos de la VM a modificar.
+`GET /vApp/{id}`  
+```python
+    header = {
+        'Accept': f'application/*+xml;version={api_version}',
+        'x-vcloud-authorization': token
+    }
+    auth = HTTPBasicAuth(username, password)
+    response = requests.post(url, auth=auth, headers=header) 
+```
+2. Guardamos la data de la response.
+3. Modificamos la sección del hardware. En este caso RAM y CPU.
+```xml
+    <ovf:VirtualHardwareSection [...Resto de datos]>
+        <ovf:Info>Virtual hardware requirements</ovf:Info>
+        [...Resto de datos]
+            <rasd:Description>Number of Virtual CPUs</rasd:Description>
+            [...Resto de datos]
+            <!-- Modificamos ElementName-->
+            <rasd:ElementName>2 virtual CPU(s)</rasd:ElementName>
+            [...Resto de datos]
+            <!-- Modificamos VirtualQuantity-->
+            <rasd:VirtualQuantity>2</rasd:VirtualQuantity>
+        [...Resto de datos]
+        </ovf:Item>
+        <ovf:Item [...Resto de datos]>
+            [...Resto de datos]
+            <rasd:Description>Memory Size</rasd:Description>
+            [...Resto de datos]
+            <!-- Modificamos  ElementName a 8GB = 8192MB-->
+            <rasd:ElementName>4096 MB of memory</rasd:ElementName>
+            [...Resto de datos]
+            <!--  Modificamos VirtualQuantity  a 8GB = 8192MB-->
+            <rasd:VirtualQuantity>4096</rasd:VirtualQuantity>
+            [...Resto de datos]
+        </ovf:Item>
+    </ovf:VirtualHardwareSection>
+```
+4. Guardamos los cambios en una variable `body`.
+5. Modificamos el header, url y requests.
+`POST /vApp/{id}/action/reconfigureVm'`
+```python
+    body="""cambios_del_item_3"""
+
+    headersPost = {
+        'Accept': f'application/*+xml;version={api_version}',
+        'Content-Type': 'application/vnd.vmware.vcloud.vm+xml',
+        'x-vcloud-authorization': token
+    }
+
+    auth = HTTPBasicAuth(username, password)
+    response = requests.post(url, auth=auth, headers=headersPost, data=body) 
+```
+
+1. Si la respuesta es exitosa: 
+```python 
+print(f"{Fore.GREEN}[Success]{Style.RESET_ALL} VM actualizada con éxito.")
+```
