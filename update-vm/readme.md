@@ -121,7 +121,7 @@ pip3 install requests colorama
         'x-vcloud-authorization': token
     }
     auth = HTTPBasicAuth(username, password)
-    response = requests.post(url, auth=auth, headers=header) 
+    response = requests.get(url, auth=auth, headers=header) 
 ```
 2. Guardamos la data de la response.
 3. Modificamos la sección del hardware. En este caso RAM y CPU.
